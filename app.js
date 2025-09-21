@@ -1,285 +1,128 @@
-// --- PARAMETRY ---
-const produkt = "Jablka";
-const puvodniCena = 15;
+const { useState, useMemo, useEffect } = React;
+const {
+  LineChart, Line, CartesianGrid, XAxis, YAxis,
+  Tooltip, ResponsiveContainer, ReferenceDot, Legend
+} = Recharts;
 
-// Nabídka: Q = a + bP
-const a = 3;
-const b = 1.1;
+function AplikaceTrh() {
+  const [zalozka, nastavZalozku] = useState("nabidka");
+  const [cena, nastavCena] = useState(20);
 
-// Poptávka: Q = c + dP
-const c = 60;
-const d = -1.4;
+  const ROZMEZI_CEN = useMemo(() => {
+    return zalozka === "propojeny" ? { min: 0, max: 46 } : { min: 0, max: 100 };
+  }, [zalozka]);
 
-// DOM Elements
-const btnNabidka = document.getElementById('btn-nabidka');
-const btnPoptavka = document.getElementById('btn-poptavka');
-const btnTrh = document.getElementById('btn-trh');
-const nabidkaSection = document.getElementById('nabidka-section');
-const poptavkaSection = document.getElementById('poptavka-section');
-const trhSection = document.getElementById('trh-section');
+  useEffect(() => {
+    if (cena < ROZMEZI_CEN.min) nastavCena(ROZMEZI_CEN.min);
+    if (cena > ROZMEZI_CEN.max) nastavCena(ROZMEZI_CEN.max);
+  }, [ROZMEZI_CEN, cena]);
 
-// Produkt a cena do popisků
-document.getElementById('nabidka-produkt').textContent = produkt;
-document.getElementById('nabidka-puvodni-cena').textContent = puvodniCena;
-document.getElementById('poptavka-produkt').textContent = produkt;
-document.getElementById('poptavka-puvodni_cena').textContent = puvodniCena;
-document.getElementById('trh-produkt').textContent = produkt;
-document.getElementById('trh-puvodni_cena').textContent = puvodniCena;
+  // Funkce nabídky a poptávky
+  const nabidka = (p) => 2 * p - 10;
+  const poptavka = (p) => 100 - 1.5 * p;
 
-// Přepínání záložek
-function hideAll() {
-  nabidkaSection.style.display = "none";
-  poptavkaSection.style.display = "none";
-  trhSection.style.display = "none";
-  btnNabidka.classList.remove("active");
-  btnPoptavka.classList.remove("active");
-  btnTrh.classList.remove("active");
+  // Pomocná funkce na generování dat
+  const generujData = (xMin, xMax, kroky = 50) => {
+    const krok = (xMax - xMin) / kroky;
+    const pole = [];
+    for (let i = 0; i <= kroky; i++) {
+      const x = +(xMin + krok * i).toFixed(2);
+      pole.push({ cena: x, nabidka: nabidka(x), poptavka: poptavka(x) });
+    }
+    return pole;
+  };
+
+  const dataVelka = useMemo(() => generujData(0, 100, 100), []);
+  const dataMala = useMemo(() => generujData(0, 46, 92), []);
+
+  // Rovnovážný bod
+  const rovnovaha = useMemo(() => {
+    const P_eq = 110 / 3.5;
+    const Q_eq = nabidka(P_eq);
+    return { cena: +P_eq.toFixed(2), mnozstvi: +Q_eq.toFixed(2) };
+  }, []);
+
+  const hodnotyPriCene = useMemo(() => ({
+    nabidka: +nabidka(cena).toFixed(2),
+    poptavka: +poptavka(cena).toFixed(2),
+  }), [cena]);
+
+  return (
+    <div>
+      <h1>Grafy trhu</h1>
+
+      {/* Záložky */}
+      <div>
+        <button onClick={() => nastavZalozku("nabidka")}>Nabídka</button>
+        <button onClick={() => nastavZalozku("poptavka")}>Poptávka</button>
+        <button onClick={() => nastavZalozku("propojeny")}>Propojený trh</button>
+      </div>
+
+      {/* Vstup pro cenu */}
+      <input
+        type="number"
+        min={ROZMEZI_CEN.min}
+        max={ROZMEZI_CEN.max}
+        value={cena}
+        onChange={(e) => nastavCena(Number(e.target.value))}
+      />
+
+      {/* Textové výstupy */}
+      {zalozka === "nabidka" && (
+        <p>Nabízené množství: {hodnotyPriCene.nabidka}</p>
+      )}
+      {zalozka === "poptavka" && (
+        <p>Poptávané množství: {hodnotyPriCene.poptavka}</p>
+      )}
+      {zalozka === "propojeny" && (
+        <div>
+          <p>Rovnovážná cena: {rovnovaha.cena}</p>
+          <p>Rovnovážné množství: {rovnovaha.mnozstvi}</p>
+          <p>Nabídka při ceně: {hodnotyPriCene.nabidka}</p>
+          <p>Poptávka při ceně: {hodnotyPriCene.poptavka}</p>
+        </div>
+      )}
+
+      {/* Graf */}
+      <div style={{ width: "100%", height: "400px" }}>
+        <ResponsiveContainer>
+          <LineChart
+            data={zalozka === "propojeny" ? dataMala : dataVelka}
+            margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="cena" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+
+            {zalozka !== "poptavka" && (
+              <Line type="linear" dataKey="nabidka" stroke="teal" dot={false} />
+            )}
+            {zalozka !== "nabidka" && (
+              <Line type="linear" dataKey="poptavka" stroke="red" dot={false} />
+            )}
+
+            {/* Tečky */}
+            {zalozka === "nabidka" && (
+              <ReferenceDot x={cena} y={hodnotyPriCene.nabidka} r={5} fill="teal" />
+            )}
+            {zalozka === "poptavka" && (
+              <ReferenceDot x={cena} y={hodnotyPriCene.poptavka} r={5} fill="red" />
+            )}
+            {zalozka === "propojeny" && (
+              <>
+                <ReferenceDot x={cena} y={hodnotyPriCene.nabidka} r={5} fill="teal" />
+                <ReferenceDot x={cena} y={hodnotyPriCene.poptavka} r={5} fill="red" />
+                <ReferenceDot x={rovnovaha.cena} y={rovnovaha.mnozstvi} r={6} fill="black" />
+              </>
+            )}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
 }
-btnNabidka.onclick = function() {
-  hideAll();
-  nabidkaSection.style.display = "";
-  btnNabidka.classList.add("active");
-};
-btnPoptavka.onclick = function() {
-  hideAll();
-  poptavkaSection.style.display = "";
-  btnPoptavka.classList.add("active");
-};
-btnTrh.onclick = function() {
-  hideAll();
-  trhSection.style.display = "";
-  btnTrh.classList.add("active");
-};
 
-// --- Nabídka ---
-const nabidkaCenaInput = document.getElementById('nabidka-cena');
-const nabidkaVysledek = document.getElementById('nabidka-vysledek');
-let nabidkaChart;
-function vykresliNabidkaGraf(cena) {
-  // Nabídka: Q = a + b*P
-  let data = [];
-  for (let i = 0; i <= 100; i++) {
-    data.push({x: i, y: a + b * i});
-  }
-  // Scatter pro zadanou cenu
-  const mnozstviZadano = a + b * cena;
-  let body = [{ x: cena, y: mnozstviZadano }];
-
-  if (!nabidkaChart) {
-    nabidkaChart = new Chart(document.getElementById('nabidka-graf').getContext('2d'), {
-      type: 'line',
-      data: {
-        datasets: [{
-          label: 'Nabídka',
-          data: data,
-          borderColor: 'blue',
-          backgroundColor: 'rgba(0,0,255,0.03)',
-          fill: false,
-          tension: 0.05,
-          pointRadius: 0,
-          borderWidth: 2,
-          parsing: false
-        },{
-          label: 'Zadaná cena',
-          data: body,
-          type: 'scatter',
-          showLine: false,
-          pointRadius: 7,
-          pointBackgroundColor: ['red'],
-          borderColor: 'red',
-          parsing: false
-        }]
-      },
-      options: {
-        plugins: { legend: { position: 'top' }},
-        scales: {
-          x: { title: { display: true, text: 'Cena (Kč)' }, min: 0, max: 100 },
-          y: { title: { display: true, text: 'Nabízené množství' }, min: 0 }
-        }
-      }
-    });
-  } else {
-    nabidkaChart.data.datasets[0].data = data;
-    nabidkaChart.data.datasets[1].data = body;
-    nabidkaChart.update();
-  }
-  nabidkaVysledek.innerHTML = `Při ceně <b>${cena} Kč</b> výrobci nabídnou <b>${mnozstviZadano.toFixed(1)}</b> kusů produktu.`;
-}
-nabidkaCenaInput.addEventListener("input", e => {
-  let cena = parseFloat(e.target.value) || puvodniCena;
-  vykresliNabidkaGraf(cena);
-});
-vykresliNabidkaGraf(puvodniCena);
-
-// --- Poptávka ---
-const poptavkaCenaInput = document.getElementById('poptavka-cena');
-const poptavkaVysledek = document.getElementById('poptavka-vysledek');
-let poptavkaChart;
-function vykresliPoptavkaGraf(cena) {
-  // Poptávka: Q = c + d*P
-  let data = [];
-  for (let i = 0; i <= 100; i++) {
-    data.push({x: i, y: c + d * i});
-  }
-  // Scatter pro zadanou cenu
-  const mnozstviZadano = c + d * cena;
-  let body = [{ x: cena, y: mnozstviZadano }];
-
-  if (!poptavkaChart) {
-    poptavkaChart = new Chart(document.getElementById('poptavka-graf').getContext('2d'), {
-      type: 'line',
-      data: {
-        datasets: [{
-          label: 'Poptávka',
-          data: data,
-          borderColor: 'green',
-          backgroundColor: 'rgba(0,255,0,0.03)',
-          fill: false,
-          tension: 0.05,
-          pointRadius: 0,
-          borderWidth: 2,
-          parsing: false
-        },{
-          label: 'Zadaná cena',
-          data: body,
-          type: 'scatter',
-          showLine: false,
-          pointRadius: 7,
-          pointBackgroundColor: ['red'],
-          borderColor: 'red',
-          parsing: false
-        }]
-      },
-      options: {
-        plugins: { legend: { position: 'top' }},
-        scales: {
-          x: { title: { display: true, text: 'Cena (Kč)' }, min: 0, max: 100 },
-          y: { title: { display: true, text: 'Poptávané množství' } }
-        }
-      }
-    });
-  } else {
-    poptavkaChart.data.datasets[0].data = data;
-    poptavkaChart.data.datasets[1].data = body;
-    poptavkaChart.update();
-  }
-  poptavkaVysledek.innerHTML = `Při ceně <b>${cena} Kč</b> spotřebitelé poptávají <b>${mnozstviZadano.toFixed(1)}</b> kusů produktu.`;
-}
-poptavkaCenaInput.addEventListener("input", e => {
-  let cena = parseFloat(e.target.value) || puvodniCena;
-  vykresliPoptavkaGraf(cena);
-});
-vykresliPoptavkaGraf(puvodniCena);
-
-// --- Propojený trh (Nabídka & Poptávka) ---
-const trhCenaInput = document.getElementById('trh-cena');
-const trhVysledek = document.getElementById('trh-vysledek');
-let trhChart;
-function vykresliTrhGraf(cena) {
-  const maxCena = 46;
-  const minMnozstvi = -20;
-  const maxMnozstvi = 120;
-
-  // Nabídka a poptávka: x = cena, y = množství
-  let nabidkaXY = [];
-  let poptavkaXY = [];
-  for (let i = 0; i <= maxCena; i++) {
-    nabidkaXY.push({ x: i, y: a + b * i });
-    poptavkaXY.push({ x: i, y: c + d * i });
-  }
-
-  // Scatter pro zadanou cenu
-  const mnozstviNab = a + b * cena;
-  const mnozstviPop = c + d * cena;
-  let bodyNab = [{ x: cena, y: mnozstviNab }];
-  let bodyPop = [{ x: cena, y: mnozstviPop }];
-
-  // Rovnováha
-  const rovnovaznaCena = (c - a) / (b - d);
-  const rovnovazneMnozstvi = a + b * rovnovaznaCena;
-
-  if (!trhChart) {
-    trhChart = new Chart(document.getElementById('trh-graf').getContext('2d'), {
-      type: 'line',
-      data: {
-        datasets: [
-          {
-            label: 'Nabídka',
-            data: nabidkaXY,
-            borderColor: 'blue',
-            backgroundColor: 'rgba(0,0,255,0.03)',
-            fill: false,
-            tension: 0.05,
-            pointRadius: 0,
-            borderWidth: 2,
-            parsing: false
-          },
-          {
-            label: 'Poptávka',
-            data: poptavkaXY,
-            borderColor: 'green',
-            backgroundColor: 'rgba(0,255,0,0.03)',
-            fill: false,
-            tension: 0.05,
-            pointRadius: 0,
-            borderWidth: 2,
-            parsing: false
-          },
-          {
-            label: 'Zadaná cena – nabídka',
-            data: bodyNab,
-            type: 'scatter',
-            showLine: false,
-            pointRadius: 7,
-            pointBackgroundColor: ['blue'],
-            borderColor: 'blue',
-            parsing: false
-          },
-          {
-            label: 'Zadaná cena – poptávka',
-            data: bodyPop,
-            type: 'scatter',
-            showLine: false,
-            pointRadius: 7,
-            pointBackgroundColor: ['green'],
-            borderColor: 'green',
-            parsing: false
-          }
-        ]
-      },
-      options: {
-        plugins: { legend: { position: 'top' }},
-        scales: {
-          x: { title: { display: true, text: 'Cena (Kč)' }, min: 0, max: maxCena },
-          y: { title: { display: true, text: 'Množství' }, min: minMnozstvi, max: maxMnozstvi }
-        }
-      }
-    });
-  } else {
-    trhChart.data.datasets[0].data = nabidkaXY;
-    trhChart.data.datasets[1].data = poptavkaXY;
-    trhChart.data.datasets[2].data = bodyNab;
-    trhChart.data.datasets[3].data = bodyPop;
-    trhChart.options.scales.x.min = 0;
-    trhChart.options.scales.x.max = maxCena;
-    trhChart.options.scales.y.min = minMnozstvi;
-    trhChart.options.scales.y.max = maxMnozstvi;
-    trhChart.update();
-  }
-
-  // Výstup – pouze čísla, žádný komentář o trhu
-  let info = `
-    <b>Rovnovážná cena:</b> ${rovnovaznaCena.toFixed(2)} Kč,
-    <b>rovnovážné množství:</b> ${rovnovazneMnozstvi.toFixed(1)} ks.<br>
-    <b>Při ceně ${cena} Kč:</b>
-    <br>Nabídka: <b>${mnozstviNab.toFixed(1)}</b> ks,
-    poptávka: <b>${mnozstviPop.toFixed(1)}</b> ks.<br>
-  `;
-  trhVysledek.innerHTML = info;
-}
-trhCenaInput.addEventListener("input", e => {
-  let cena = parseFloat(e.target.value) || puvodniCena;
-  vykresliTrhGraf(cena);
-});
-vykresliTrhGraf(puvodniCena);
-
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<AplikaceTrh />);
