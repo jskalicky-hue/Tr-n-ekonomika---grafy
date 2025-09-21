@@ -22,9 +22,9 @@ const trhSection = document.getElementById('trh-section');
 document.getElementById('nabidka-produkt').textContent = produkt;
 document.getElementById('nabidka-puvodni-cena').textContent = puvodniCena;
 document.getElementById('poptavka-produkt').textContent = produkt;
-document.getElementById('poptavka-puvodni-cena').textContent = puvodniCena;
+document.getElementById('poptavka-puvodni_cena').textContent = puvodniCena;
 document.getElementById('trh-produkt').textContent = produkt;
-document.getElementById('trh-puvodni-cena').textContent = puvodniCena;
+document.getElementById('trh-puvodni_cena').textContent = puvodniCena;
 
 // Přepínání záložek
 function hideAll() {
@@ -283,9 +283,6 @@ function vykresliTrhGraf(cena) {
 }
 trhCenaInput.addEventListener("input", e => {
   let cena = parseFloat(e.target.value) || puvodniCena;
-  vykresliTrhGraf(cena);
-});
-vykresliTrhGraf(puvodniCena);
   vykresliTrhGraf(cena);
 });
 vykresliTrhGraf(puvodniCena);
