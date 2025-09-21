@@ -10,7 +10,7 @@ const b = 1.1;
 const c = 60;
 const d = -1.4;
 
-// --- DOM Elements ---
+// DOM Elements
 const btnNabidka = document.getElementById('btn-nabidka');
 const btnPoptavka = document.getElementById('btn-poptavka');
 const btnTrh = document.getElementById('btn-trh');
@@ -57,10 +57,9 @@ const nabidkaVysledek = document.getElementById('nabidka-vysledek');
 let nabidkaChart;
 function vykresliNabidkaGraf(cena) {
   // Nabídka: Q = a + b*P
-  let ceny = [], mnozstvi = [];
+  let data = [];
   for (let i = 0; i <= 100; i++) {
-    ceny.push(i);
-    mnozstvi.push(a + b * i);
+    data.push({x: i, y: a + b * i});
   }
   // Scatter pro zadanou cenu
   const mnozstviZadano = a + b * cena;
@@ -72,7 +71,7 @@ function vykresliNabidkaGraf(cena) {
       data: {
         datasets: [{
           label: 'Nabídka',
-          data: ceny.map((c, i) => ({ x: c, y: mnozstvi[i] })),
+          data: data,
           borderColor: 'blue',
           backgroundColor: 'rgba(0,0,255,0.03)',
           fill: false,
@@ -100,7 +99,7 @@ function vykresliNabidkaGraf(cena) {
       }
     });
   } else {
-    nabidkaChart.data.datasets[0].data = ceny.map((c, i) => ({ x: c, y: mnozstvi[i] }));
+    nabidkaChart.data.datasets[0].data = data;
     nabidkaChart.data.datasets[1].data = body;
     nabidkaChart.update();
   }
@@ -118,10 +117,9 @@ const poptavkaVysledek = document.getElementById('poptavka-vysledek');
 let poptavkaChart;
 function vykresliPoptavkaGraf(cena) {
   // Poptávka: Q = c + d*P
-  let ceny = [], mnozstvi = [];
+  let data = [];
   for (let i = 0; i <= 100; i++) {
-    ceny.push(i);
-    mnozstvi.push(c + d * i);
+    data.push({x: i, y: c + d * i});
   }
   // Scatter pro zadanou cenu
   const mnozstviZadano = c + d * cena;
@@ -133,7 +131,7 @@ function vykresliPoptavkaGraf(cena) {
       data: {
         datasets: [{
           label: 'Poptávka',
-          data: ceny.map((c, i) => ({ x: c, y: mnozstvi[i] })),
+          data: data,
           borderColor: 'green',
           backgroundColor: 'rgba(0,255,0,0.03)',
           fill: false,
@@ -156,12 +154,12 @@ function vykresliPoptavkaGraf(cena) {
         plugins: { legend: { position: 'top' }},
         scales: {
           x: { title: { display: true, text: 'Cena (Kč)' }, min: 0, max: 100 },
-          y: { title: { display: true, text: 'Poptávané množství' }, min: 0 }
+          y: { title: { display: true, text: 'Poptávané množství' } }
         }
       }
     });
   } else {
-    poptavkaChart.data.datasets[0].data = ceny.map((c, i) => ({ x: c, y: mnozstvi[i] }));
+    poptavkaChart.data.datasets[0].data = data;
     poptavkaChart.data.datasets[1].data = body;
     poptavkaChart.update();
   }
@@ -183,11 +181,9 @@ function vykresliTrhGraf(cena) {
   const maxMnozstvi = 120;
 
   // Nabídka a poptávka: x = cena, y = množství
-  let ceny = [];
   let nabidkaXY = [];
   let poptavkaXY = [];
   for (let i = 0; i <= maxCena; i++) {
-    ceny.push(i);
     nabidkaXY.push({ x: i, y: a + b * i });
     poptavkaXY.push({ x: i, y: c + d * i });
   }
