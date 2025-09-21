@@ -1,0 +1,68 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 30px;
+  background: #f7f7fa;
+}
+h1 {
+  text-align: center;
+}
+nav {
+  text-align: center;
+  margin-bottom: 30px;
+}
+.tab-btn {
+  margin: 0 8px;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px 8px 0 0;
+  background: #e9e9ef;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1em;
+}
+.tab-btn.active {
+  background: #fff;
+  border-bottom: 3px solid #3a7be0;
+  color: #3a7be0;
+}
+main {
+  display: flex;
+  justify-content: center;
+}
+.graph-section {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px #b5b5c5;
+  padding: 30px 40px 25px 40px;
+  min-width: 660px;
+}
+.desc {
+  margin-bottom: 15px;
+  font-size: 1.1em;
+  color: #444;
+}
+label {
+  font-weight: bold;
+}
+input[type="number"] {
+  margin: 0 10px 20px 10px;
+  width: 80px;
+  font-size: 1em;
+  padding: 4px 7px;
+}
+#nabidka-vysledek, #poptavka-vysledek, #trh-vysledek {
+  margin-bottom: 14px;
+  font-size: 1.1em;
+  min-height: 26px;
+}
+canvas {
+  margin-top: 10px;
+  border-radius: 8px;
+  background: #fafaff;
+}
+@media (max-width: 800px) {
+  .graph-section {
+    min-width: unset;
+    padding: 10px 2vw 15px 2vw;
+  }
+}
