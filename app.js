@@ -185,7 +185,7 @@ const trhCenaInput = document.getElementById('trh-cena');
 const trhVysledek = document.getElementById('trh-vysledek');
 let trhChart;
 function vykresliTrhGraf(cena) {
-  // Propojený trh: osa X = množství, osa Y = cena
+  // Propojený trh: osa X = cena, osa Y = množství
   let ceny = [], nabidka = [], poptavka = [];
   for (let i = 0; i <= 100; i += 1) {
     ceny.push(i);
@@ -289,3 +289,4 @@ trhCenaInput.addEventListener("input", e => {
   vykresliTrhGraf(cena);
 });
 vykresliTrhGraf(puvodniCena);
+
