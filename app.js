@@ -57,7 +57,7 @@ function vykresliNabidkaGraf(cena) {
   // Nabídka: Q = a + b*P
   // Generuj data
   let ceny = [], mnozstvi = [];
-  for (let i = 0; i <= 40; i += 1) {
+  for (let i = 0; i <= 100; i += 1) {
     ceny.push(i);
     mnozstvi.push(a + b * i);
   }
@@ -123,7 +123,7 @@ let poptavkaChart;
 function vykresliPoptavkaGraf(cena) {
   // Poptávka: Q = c + d*P
   let ceny = [], mnozstvi = [];
-  for (let i = 0; i <= 40; i += 1) {
+  for (let i = 0; i <= 100; i += 1) {
     ceny.push(i);
     mnozstvi.push(c + d * i);
   }
@@ -186,7 +186,7 @@ const trhVysledek = document.getElementById('trh-vysledek');
 let trhChart;
 function vykresliTrhGraf(cena) {
   let ceny = [], nabidka = [], poptavka = [];
-  for (let i = 0; i <= 40; i += 1) {
+  for (let i = 0; i <= 100; i += 1) {
     ceny.push(i);
     nabidka.push(a + b * i);
     poptavka.push(c + d * i);
@@ -287,3 +287,4 @@ trhCenaInput.addEventListener("input", e => {
   vykresliTrhGraf(cena);
 });
 vykresliTrhGraf(puvodniCena);
+
