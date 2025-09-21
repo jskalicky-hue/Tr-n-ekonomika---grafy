@@ -182,12 +182,14 @@ vykresliPoptavkaGraf(puvodniCena);
 
 // --- Propojený trh (nabídka & poptávka) ---
 const trhCenaInput = document.getElementById('trh-cena');
+trhCenaInput.setAttribute('max', '46'); // nastav maximální cenu na 46 Kč
 const trhVysledek = document.getElementById('trh-vysledek');
 let trhChart;
 function vykresliTrhGraf(cena) {
-  // Propojený trh: osa X = cena, osa Y = množství
+  // Propojený trh: osa X = množství, osa Y = cena
+  const maxCena = 46;
   let ceny = [], nabidka = [], poptavka = [];
-  for (let i = 0; i <= 100; i += 1) {
+  for (let i = 0; i <= maxCena; i += 1) {
     ceny.push(i);
     nabidka.push(a + b * i);
     poptavka.push(c + d * i);
@@ -199,8 +201,8 @@ function vykresliTrhGraf(cena) {
   const mnozstviPop = c + d * cena;
 
   // Dataset pro scatter bod v zadané ceně (přehozené osy)
-  let bodyNab = nabidka.map((mq, i) => i===idx ? { x: mq, y: ceny[idx] } : null);
-  let bodyPop = poptavka.map((mq, i) => i===idx ? { x: mq, y: ceny[idx] } : null);
+  let bodyNab = [{ x: mnozstviNab, y: cena }];
+  let bodyPop = [{ x: mnozstviPop, y: cena }];
 
   // Přepočet pro přehozené osy: x = množství, y = cena
   let nabidkaXY = ceny.map((cena, i) => ({ x: nabidka[i], y: cena }));
@@ -239,7 +241,7 @@ function vykresliTrhGraf(cena) {
           },
           {
             label: 'Zadaná cena – nabídka',
-            data: bodyNab.filter(v => v),
+            data: bodyNab,
             type: 'scatter',
             showLine: false,
             pointRadius: 7,
@@ -248,7 +250,7 @@ function vykresliTrhGraf(cena) {
           },
           {
             label: 'Zadaná cena – poptávka',
-            data: bodyPop.filter(v => v),
+            data: bodyPop,
             type: 'scatter',
             showLine: false,
             pointRadius: 7,
@@ -261,19 +263,20 @@ function vykresliTrhGraf(cena) {
         plugins: { legend: { position: 'top' }},
         scales: {
           x: { title: { display: true, text: 'Množství' }, beginAtZero: true },
-          y: { title: { display: true, text: 'Cena (Kč)' }, min: 0, max: 100 }
+          y: { title: { display: true, text: 'Cena (Kč)' }, min: 0, max: maxCena }
         }
       }
     });
   } else {
     trhChart.data.datasets[0].data = nabidkaXY;
     trhChart.data.datasets[1].data = poptavkaXY;
-    trhChart.data.datasets[2].data = bodyNab.filter(v => v);
-    trhChart.data.datasets[3].data = bodyPop.filter(v => v);
+    trhChart.data.datasets[2].data = bodyNab;
+    trhChart.data.datasets[3].data = bodyPop;
+    trhChart.options.scales.y.max = maxCena;
     trhChart.update();
   }
 
-  // Výstup: pouze rovnovážná cena a množství, bez nadbytku/nedostatku
+  // Výstup: pouze rovnovážná cena a množství, bez vět o trhu
   let info = `
     <b>Rovnovážná cena:</b> ${rovnovaznaCena.toFixed(2)} Kč,
     <b>rovnovážné množství:</b> ${rovnovazneMnozstvi.toFixed(1)} ks.<br>
@@ -281,7 +284,6 @@ function vykresliTrhGraf(cena) {
     <br>Nabídka: <b>${mnozstviNab.toFixed(1)}</b> ks,
     poptávka: <b>${mnozstviPop.toFixed(1)}</b> ks.<br>
   `;
-  // Odstraněna informace o nadbytku/nedostatku
   trhVysledek.innerHTML = info;
 }
 trhCenaInput.addEventListener("input", e => {
