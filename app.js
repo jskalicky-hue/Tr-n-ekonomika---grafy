@@ -186,6 +186,7 @@ trhCenaInput.setAttribute('max', '46');
 const trhVysledek = document.getElementById('trh-vysledek');
 let trhChart;
 function vykresliTrhGraf(cena) {
+  const minCena = 1;
   const maxCena = 46;
   const minMnozstvi = -20;
   const maxMnozstvi = 120;
@@ -302,3 +303,4 @@ trhCenaInput.addEventListener("input", e => {
   vykresliTrhGraf(cena);
 });
 vykresliTrhGraf(puvodniCena);
+
