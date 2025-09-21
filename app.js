@@ -182,31 +182,29 @@ vykresliPoptavkaGraf(puvodniCena);
 
 // --- Propojený trh (nabídka & poptávka) ---
 const trhCenaInput = document.getElementById('trh-cena');
-trhCenaInput.setAttribute('max', '100');
+trhCenaInput.setAttribute('max', '46');
 const trhVysledek = document.getElementById('trh-vysledek');
 let trhChart;
 function vykresliTrhGraf(cena) {
-  const maxCena = 100;
-  const minMnozstvi = -100; // MINIMUM množství na ose X
-  const maxMnozstvi = 200;  // MAXIMUM množství na ose X
+  const maxCena = 46;
+  const minMnozstvi = -20;
+  const maxMnozstvi = 120;
 
-  // Vypočítej nabídku a poptávku pro každou cenu
-  let ceny = [], nabidka = [], poptavka = [];
-  for (let i = 0; i <= maxCena; i += 1) {
+  // Křivky: x = cena, y = množství
+  let ceny = [];
+  let nabidkaXY = [];
+  let poptavkaXY = [];
+  for (let i = 0; i <= maxCena; i++) {
     ceny.push(i);
-    nabidka.push(a + b * i);
-    poptavka.push(c + d * i);
+    nabidkaXY.push({ x: i, y: a + b * i });
+    poptavkaXY.push({ x: i, y: c + d * i });
   }
 
-  // Scatter body – vždy jedna hodnota
+  // Scatter body pro zadanou cenu
   const mnozstviNab = a + b * cena;
   const mnozstviPop = c + d * cena;
-  let bodyNab = [{ x: mnozstviNab, y: cena }];
-  let bodyPop = [{ x: mnozstviPop, y: cena }];
-
-  // Data pro křivky (x = množství, y = cena)
-  let nabidkaXY = ceny.map((c, i) => ({ x: nabidka[i], y: c }));
-  let poptavkaXY = ceny.map((c, i) => ({ x: poptavka[i], y: c }));
+  let bodyNab = [{ x: cena, y: mnozstviNab }];
+  let bodyPop = [{ x: cena, y: mnozstviPop }];
 
   // Rovnováha
   const rovnovaznaCena = (c - a) / (b - d);
@@ -246,7 +244,8 @@ function vykresliTrhGraf(cena) {
             showLine: false,
             pointRadius: 7,
             pointBackgroundColor: ['blue'],
-            borderColor: 'blue'
+            borderColor: 'blue',
+            parsing: false
           },
           {
             label: 'Zadaná cena – poptávka',
@@ -255,7 +254,8 @@ function vykresliTrhGraf(cena) {
             showLine: false,
             pointRadius: 7,
             pointBackgroundColor: ['green'],
-            borderColor: 'green'
+            borderColor: 'green',
+            parsing: false
           }
         ]
       },
@@ -263,14 +263,14 @@ function vykresliTrhGraf(cena) {
         plugins: { legend: { position: 'top' }},
         scales: {
           x: { 
-            title: { display: true, text: 'Množství' }, 
-            min: minMnozstvi, 
-            max: maxMnozstvi 
-          },
-          y: { 
             title: { display: true, text: 'Cena (Kč)' }, 
             min: 0, 
             max: maxCena 
+          },
+          y: { 
+            title: { display: true, text: 'Množství' }, 
+            min: minMnozstvi, 
+            max: maxMnozstvi 
           }
         }
       }
@@ -280,13 +280,14 @@ function vykresliTrhGraf(cena) {
     trhChart.data.datasets[1].data = poptavkaXY;
     trhChart.data.datasets[2].data = bodyNab;
     trhChart.data.datasets[3].data = bodyPop;
-    trhChart.options.scales.x.min = minMnozstvi;
-    trhChart.options.scales.x.max = maxMnozstvi;
-    trhChart.options.scales.y.max = maxCena;
+    trhChart.options.scales.x.min = 0;
+    trhChart.options.scales.x.max = maxCena;
+    trhChart.options.scales.y.min = minMnozstvi;
+    trhChart.options.scales.y.max = maxMnozstvi;
     trhChart.update();
   }
 
-  // Výstup
+  // Výstup bez vět o nadbytku/nedostatku
   let info = `
     <b>Rovnovážná cena:</b> ${rovnovaznaCena.toFixed(2)} Kč,
     <b>rovnovážné množství:</b> ${rovnovazneMnozstvi.toFixed(1)} ks.<br>
